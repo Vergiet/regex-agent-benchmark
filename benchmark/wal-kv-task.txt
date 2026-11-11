@@ -1,0 +1,6 @@
+Build a crash-safe append-only key-value store with a write-ahead log and
+compaction. Test it by injecting truncated and torn writes at random byte offsets,
+then asserting that every recovered state is one of the legally reachable states —
+never a torn or invented one. Run thousands of randomized crash points with a fixed
+seed. A recovered state that is not legally reachable is a bug in the store, not the
+test.

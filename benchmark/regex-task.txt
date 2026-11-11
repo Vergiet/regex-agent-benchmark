@@ -1,0 +1,40 @@
+Build a regex engine from scratch in Python. No `re` module in the implementation —
+importing it anywhere under src/ is an automatic failure.
+
+Supported syntax:
+  literals, . ^ $
+  classes: [a-z] [^abc] with escapes \d \w \s \D \W \S
+  quantifiers: * + ? {n} {n,} {n,m}, each with a lazy variant (*? +? ?? {n,m}?)
+  groups: (capturing), (?:non-capturing), alternation |
+  backreferences: \1 .. \9
+
+Requirements:
+  1. Use a Thompson NFA construction with explicit backtracking only where
+     backreferences force it. Document in ARCHITECTURE.md why backrefs cannot be
+     handled by the pure NFA simulation.
+  2. Leftmost-longest is WRONG here — match Python's leftmost-earliest-alternative
+     semantics exactly, including how lazy quantifiers pick their stopping point.
+  3. Capture groups must report correct (start, end) spans, including groups inside
+     repetitions (the LAST iteration's span wins) and groups that matched empty.
+  4. Guard against catastrophic backtracking: (a+)+b against "aaaaaaaaaaaaaaaaaaaaX"
+     must terminate in under 100ms.
+  5. Correctly handle empty-width loops: (a*)* must not hang.
+
+Verification — this is the part that matters:
+  Write tests/test_differential.py that GENERATES random patterns and random subject
+  strings, then compares your engine against Python's `re` for: match/no-match, the
+  full match span, and every group span. The generator must produce nested groups,
+  alternations, lazy quantifiers, and backreferences. Run at least 100,000 cases with
+  a fixed seed, and print the seed. Any divergence from `re` is a bug in YOUR engine —
+  fix it, don't adjust the test to accept it.
+
+Rules:
+  - Do not use `re` in src/. Only tests/ may import it, as the oracle.
+  - No test may be skipped, xfailed, or marked expected-failure.
+  - Do not narrow the feature set to make tests pass. If you cannot make something
+    work, leave the test failing and say so explicitly in your final message.
+  - Before claiming completion, actually run the full differential suite and paste
+    the real output, including the case count and seed.
+
+Deliver: src/, tests/, ARCHITECTURE.md, and a final report stating exactly which
+features pass and which do not.
